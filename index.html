@@ -1,142 +1,144 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lesson Planning Time Estimator</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson Planning Time Survey</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
       background: #f9fafb;
-      color: #333;
-    }
-    .container {
-      max-width: 480px;
-      margin: 0 auto;
-      padding: 1.5rem;
+      color: #111;
     }
     .card {
-      background: #fff;
-      padding: 1.5rem;
-      border-radius: 1rem;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
     }
-    h2, h3 {
-      margin-top: 0;
-    }
-    .question {
-      display: none;
-    }
-    .question.active {
-      display: block;
-    }
-    input[type="number"] {
+    .question { font-size: 1.2em; margin-bottom: 15px; }
+    .hidden { display: none; }
+    input[type=number] {
       width: 100%;
-      padding: 0.5rem;
-      margin-top: 0.5rem;
-      font-size: 1rem;
+      padding: 8px;
+      font-size: 1em;
+      margin-bottom: 15px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
     }
     button {
-      margin-top: 1rem;
-      padding: 0.75rem 1rem;
-      border: none;
-      border-radius: 0.5rem;
+      padding: 10px 16px;
       background: #2563eb;
       color: white;
-      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 1em;
       cursor: pointer;
     }
     button:disabled {
       background: #9ca3af;
-      cursor: not-allowed;
     }
-    canvas {
-      margin-top: 1rem;
+    .summary {
+      margin-top: 20px;
+      font-size: 1em;
+      line-height: 1.4;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="card">
-      <h2>Lesson Planning Time Estimator</h2>
-      <div id="survey">
-        <!-- Questions -->
-        <div class="question active" data-q="0">
-          <h3>Q1: Hours per week framing lessons?</h3>
-          <input type="number" id="frameBefore" placeholder="e.g. 3" min="0">
-          <button onclick="nextQuestion()">Next</button>
-        </div>
-        <div class="question" data-q="1">
-          <h3>Q2: Hours per week writing lessons?</h3>
-          <input type="number" id="writingBefore" placeholder="e.g. 5" min="0">
-          <button onclick="nextQuestion()">Next</button>
-        </div>
-        <div class="question" data-q="2">
-          <h3>Q3: Hours per week editing lessons?</h3>
-          <input type="number" id="editingBefore" placeholder="e.g. 2" min="0">
-          <button onclick="nextQuestion()">Next</button>
-        </div>
-        <div class="question" data-q="3">
-          <h3>Q4: Estimated time saved with transcription + browser voice tools?</h3>
-          <input type="number" id="timeSavedPercent" placeholder="% time saved (e.g. 30)" min="0" max="100">
-          <button onclick="showResults()">Finish</button>
-        </div>
-      </div>
-      <div id="results" style="display:none;">
-        <h3>Your Weekly Comparison</h3>
-        <canvas id="timeChart"></canvas>
-        <p><strong>Tip:</strong> Use your phone's built‑in voice tools and transcription to capture ideas quickly. Remember: I never send anything important that I have *heard* back without actively editing.</p>
-      </div>
-    </div>
+  <h2>📊 Lesson Planning Time Survey</h2>
+
+  <div id="survey" class="card"></div>
+
+  <div id="results" class="hidden card">
+    <h3>⏱ Your Weekly Summary</h3>
+    <canvas id="timeChart"></canvas>
+    <div class="summary" id="summaryText"></div>
+    <button onclick="restartSurvey()">🔄 Start Over</button>
   </div>
 
   <script>
-    let currentQ = 0;
-    const questions = document.querySelectorAll('.question');
+    const questions = [
+      { key: "frame", text: "On average, how many hours per week do you spend FRAMING or brainstorming lessons?" },
+      { key: "writing", text: "How many hours per week do you spend WRITING full lesson plans?" },
+      { key: "editing", text: "How many hours per week do you spend EDITING and refining lessons?" },
+      { key: "emails", text: "How many hours per week do you spend on school-related EMAILS or COMMUNICATION?" },
+      { key: "grading", text: "How many hours per week do you spend GRADING or FEEDBACK?" },
+      { key: "meetings", text: "How many hours per week do you spend in MEETINGS or COLLABORATION?" },
+      { key: "voiceTranscribe", text: "If you used VOICE features + transcription, how many hours per week could you SAVE?" },
+    ];
+
+    let responses = {};
+    let currentQuestion = 0;
+
+    function renderQuestion() {
+      if (currentQuestion >= questions.length) {
+        showResults();
+        return;
+      }
+      const q = questions[currentQuestion];
+      document.getElementById("survey").innerHTML = `
+        <div class="question">${q.text}</div>
+        <input type="number" id="answer" min="0" placeholder="Enter hours" />
+        <button onclick="nextQuestion()">Next</button>
+      `;
+    }
 
     function nextQuestion() {
-      questions[currentQ].classList.remove('active');
-      currentQ++;
-      questions[currentQ].classList.add('active');
+      const input = document.getElementById("answer");
+      const value = parseFloat(input.value);
+      if (!isNaN(value)) {
+        responses[questions[currentQuestion].key] = value;
+        currentQuestion++;
+        renderQuestion();
+      } else {
+        alert("Please enter a number");
+      }
     }
 
     function showResults() {
-      // gather inputs
-      const frame = parseFloat(document.getElementById('frameBefore').value) || 0;
-      const writing = parseFloat(document.getElementById('writingBefore').value) || 0;
-      const editing = parseFloat(document.getElementById('editingBefore').value) || 0;
-      const percent = parseFloat(document.getElementById('timeSavedPercent').value) || 0;
+      document.getElementById("survey").classList.add("hidden");
+      document.getElementById("results").classList.remove("hidden");
 
-      const before = frame + writing + editing;
-      const after = before * (1 - percent/100);
+      const totalBefore = responses.frame + responses.writing + responses.editing + responses.emails + responses.grading + responses.meetings;
+      const totalAfter = totalBefore - responses.voiceTranscribe;
 
-      document.getElementById('survey').style.display = 'none';
-      document.getElementById('results').style.display = 'block';
-
-      const ctx = document.getElementById('timeChart');
+      const ctx = document.getElementById("timeChart").getContext("2d");
       new Chart(ctx, {
         type: 'bar',
         data: {
           labels: ['Before Voice Tools', 'After Voice Tools'],
           datasets: [{
             label: 'Estimated Weekly Hours',
-            data: [before, after],
+            data: [totalBefore, totalAfter],
             backgroundColor: ['#ef4444','#10b981']
           }]
         },
-        options: {
-          responsive: true,
-          scales: {
-            y: {
-              beginAtZero: true
-            }
-          }
-        }
+        options: { responsive: true, plugins: { legend: { display: false } } }
       });
+
+      document.getElementById("summaryText").innerHTML = `
+        <p><strong>Total before voice tools:</strong> ${totalBefore} hrs/week</p>
+        <p><strong>Total after voice tools:</strong> ${totalAfter} hrs/week</p>
+        <p>You estimated saving about <strong>${responses.voiceTranscribe} hrs/week</strong> using voice features + transcription.</p>
+        <p>That’s roughly <strong>${(responses.voiceTranscribe*4).toFixed(1)} hrs/month</strong> you could redirect into teaching, rest, or creativity!</p>
+      `;
     }
+
+    function restartSurvey() {
+      responses = {};
+      currentQuestion = 0;
+      document.getElementById("results").classList.add("hidden");
+      document.getElementById("survey").classList.remove("hidden");
+      renderQuestion();
+    }
+
+    renderQuestion();
   </script>
 </body>
 </html>
