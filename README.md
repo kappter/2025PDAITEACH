@@ -1,7 +1,3 @@
-Perfect — here’s a polished **mini-lesson plan** you can hand to your administrator, use as your own guide, or share with participants afterward.
-
----
-
 # 📚 Professional Development Mini-Lesson Plan
 
 **Title:** *Voice to Lesson Plan: Capturing Ideas on the Go with Mobile Tools & AI*
@@ -10,6 +6,11 @@ Perfect — here’s a polished **mini-lesson plan** you can hand to your admini
 **Facilitator:** \[Your Name]
 
 ---
+
+## Resources
+
+* [Download Partner Practice Guide (PDF)](https://github.com/kappter/2025PDAITEACH/blob/main/Voice_to_Lesson_Activities.pdf)
+* [Download Voice-to-Lesson Handout (PDF)](https://github.com/kappter/2025PDAITEACH/blob/main/Voice_to_Lesson_Handout.pdf)
 
 ## Objectives
 
@@ -73,9 +74,3 @@ By the end of this session, participants will be able to:
   * Cross-platform: Microsoft Word (web), Otter.ai (optional).
 * **AI Tool:** District-approved AI platform (e.g., ChatGPT, Gemini, Copilot, or internal tool).
 * **Display:** Projector/screen for live demo.
-
----
-
-✅ This gives you a **structured session** that feels professional while still being very practical.
-
-Would you like me to also create a **second handout just for the activities** (like a “Partner Practice Guide” teachers can follow step-by-step during the session)?
