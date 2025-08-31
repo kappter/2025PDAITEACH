@@ -3,8 +3,34 @@
 **Title:** *Voice to Lesson Plan: Capturing Ideas on the Go with Mobile Tools & AI*
 **Duration:** 45 minutes
 **Audience:** K–12 Educators
-**Facilitator:** \[Your Name]
+**Facilitator:** \Ken Kapptie
 
+---
+
+## Introduction: My Philosophy on Using AI
+
+When I work with AI, my guiding rule is simple: always give it something rather than asking it to create out of nothing.
+
+* If I bring an idea, a draft, or even a messy voice note, AI can build with me.
+* But if I ask it to invent everything, it may sound generic, disconnected, or not reflect my authentic voice.
+
+Think of AI as a collaborator, not a replacement. Just like teaching, the more context you provide, the more accurate and useful the outcome.
+
+I also believe in being nice to it—not because AI has feelings, but because it listens. Every interaction we have is logged. Over time, AI trends our data:
+
+* It remembers the style of questions we ask.
+* It learns the patterns of our writing and tone.
+* It tracks the topics we return to again and again.
+
+This creates a kind of digital biography of us—a living record of how we think, what we value, and even where we struggle. In many ways, AI is less about replacing us and more about revealing us.
+
+So when I teach students or colleagues about AI, I encourage them:
+
+* Feed it your voice (your ideas, drafts, reflections).
+* Stay mindful of your footprint (everything leaves a trace).
+* Use it as a mirror, not a mask (let it sharpen your ideas, not replace them).
+
+That’s the balance I want us to explore together today.
 ---
 
 ## Resources
