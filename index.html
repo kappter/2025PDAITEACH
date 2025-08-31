@@ -1,144 +1,128 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lesson Planning Time Survey</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Teacher Lesson Time Survey</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      max-width: 600px;
-      margin: auto;
-      background: #f9fafb;
-      color: #111;
-    }
-    .card {
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      margin-bottom: 20px;
-    }
-    .question { font-size: 1.2em; margin-bottom: 15px; }
-    .hidden { display: none; }
-    input[type=number] {
-      width: 100%;
-      padding: 8px;
-      font-size: 1em;
-      margin-bottom: 15px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-    button {
-      padding: 10px 16px;
-      background: #2563eb;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 1em;
-      cursor: pointer;
-    }
-    button:disabled {
-      background: #9ca3af;
-    }
-    .summary {
-      margin-top: 20px;
-      font-size: 1em;
-      line-height: 1.4;
-    }
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f9fafb; color: #111; }
+    .card { max-width: 500px; margin: auto; background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    h2 { font-size: 1.25rem; margin-bottom: 1rem; }
+    .question { margin-bottom: 20px; }
+    input[type=number], input[type=range] { width: 100%; margin-top: 8px; }
+    button { background: #2563eb; color: white; padding: 10px 16px; border: none; border-radius: 8px; margin-top: 10px; cursor: pointer; }
+    button:disabled { background: #9ca3af; cursor: not-allowed; }
+    #summary { display: none; margin-top: 20px; }
+    canvas { margin-top: 20px; }
+    .nav-buttons { display: flex; justify-content: space-between; margin-top: 20px; }
   </style>
 </head>
 <body>
-  <h2>📊 Lesson Planning Time Survey</h2>
-
-  <div id="survey" class="card"></div>
-
-  <div id="results" class="hidden card">
-    <h3>⏱ Your Weekly Summary</h3>
-    <canvas id="timeChart"></canvas>
-    <div class="summary" id="summaryText"></div>
-    <button onclick="restartSurvey()">🔄 Start Over</button>
+  <div class="card">
+    <h2 id="title">Lesson Planning Time Survey</h2>
+    <div id="question-container"></div>
+    <div class="nav-buttons">
+      <button id="prevBtn" onclick="prevQuestion()" disabled>Back</button>
+      <button id="nextBtn" onclick="nextQuestion()">Next</button>
+    </div>
+    <div id="summary">
+      <h2>Weekly Time Comparison</h2>
+      <p><strong>Total Before:</strong> <span id="beforeTotal"></span> hrs</p>
+      <p><strong>Total After (with AI + transcription):</strong> <span id="afterTotal"></span> hrs</p>
+      <p><strong>Weekly Time Saved:</strong> <span id="timeSaved"></span> hrs (<span id="percentSaved"></span>%)</p>
+      <canvas id="timeChart"></canvas>
+      <p id="insights"></p>
+      <button onclick="restartSurvey()">Start Over</button>
+    </div>
   </div>
 
   <script>
     const questions = [
-      { key: "frame", text: "On average, how many hours per week do you spend FRAMING or brainstorming lessons?" },
-      { key: "writing", text: "How many hours per week do you spend WRITING full lesson plans?" },
-      { key: "editing", text: "How many hours per week do you spend EDITING and refining lessons?" },
-      { key: "emails", text: "How many hours per week do you spend on school-related EMAILS or COMMUNICATION?" },
-      { key: "grading", text: "How many hours per week do you spend GRADING or FEEDBACK?" },
-      { key: "meetings", text: "How many hours per week do you spend in MEETINGS or COLLABORATION?" },
-      { key: "voiceTranscribe", text: "If you used VOICE features + transcription, how many hours per week could you SAVE?" },
+      { text: "How many hours per week do you spend framing lessons (brainstorming, outlining)?", key: "frame", type: "number" },
+      { text: "How many hours per week do you spend writing lessons (drafting slides, activities)?", key: "writing", type: "number" },
+      { text: "How many hours per week do you spend editing or revising lessons?", key: "editing", type: "number" },
+      { text: "What percentage of that total time do you think you could save using transcription + voice editing tools?", key: "savePct", type: "range", min:0, max:100, step:5, default:20 }
     ];
 
-    let responses = {};
+    let answers = {};
     let currentQuestion = 0;
 
-    function renderQuestion() {
-      if (currentQuestion >= questions.length) {
-        showResults();
-        return;
-      }
+    function showQuestion() {
       const q = questions[currentQuestion];
-      document.getElementById("survey").innerHTML = `
-        <div class="question">${q.text}</div>
-        <input type="number" id="answer" min="0" placeholder="Enter hours" />
-        <button onclick="nextQuestion()">Next</button>
-      `;
+      const container = document.getElementById('question-container');
+      container.innerHTML = `<div class="question"><label>${q.text}</label>`;
+      if(q.type === 'number') {
+        container.innerHTML += `<input type="number" id="answer" min="0" placeholder="Enter hours" value="${answers[q.key]||''}" />`;
+      } else if(q.type === 'range') {
+        container.innerHTML += `<input type="range" id="answer" min="${q.min}" max="${q.max}" step="${q.step}" value="${answers[q.key]||q.default}" oninput="document.getElementById('sliderVal').innerText=this.value+'%';" />`;
+        container.innerHTML += `<p>Estimated Savings: <span id="sliderVal">${answers[q.key]||q.default}%</span></p>`;
+      }
+      container.innerHTML += `</div>`;
+      document.getElementById('prevBtn').disabled = currentQuestion===0;
+      document.getElementById('nextBtn').innerText = currentQuestion===questions.length-1 ? 'Finish' : 'Next';
     }
 
     function nextQuestion() {
-      const input = document.getElementById("answer");
-      const value = parseFloat(input.value);
-      if (!isNaN(value)) {
-        responses[questions[currentQuestion].key] = value;
+      const q = questions[currentQuestion];
+      const val = document.getElementById('answer').value;
+      if(val === '') return alert('Please enter a value');
+      answers[q.key] = parseFloat(val);
+      if(currentQuestion < questions.length-1) {
         currentQuestion++;
-        renderQuestion();
+        showQuestion();
       } else {
-        alert("Please enter a number");
+        showSummary();
       }
     }
 
-    function showResults() {
-      document.getElementById("survey").classList.add("hidden");
-      document.getElementById("results").classList.remove("hidden");
+    function prevQuestion() {
+      if(currentQuestion > 0) {
+        currentQuestion--;
+        showQuestion();
+      }
+    }
 
-      const totalBefore = responses.frame + responses.writing + responses.editing + responses.emails + responses.grading + responses.meetings;
-      const totalAfter = totalBefore - responses.voiceTranscribe;
+    function showSummary() {
+      document.getElementById('question-container').style.display='none';
+      document.querySelector('.nav-buttons').style.display='none';
+      document.getElementById('summary').style.display='block';
 
-      const ctx = document.getElementById("timeChart").getContext("2d");
+      const before = answers.frame + answers.writing + answers.editing;
+      const after = before * (1 - (answers.savePct/100));
+      const saved = before - after;
+      const percentSaved = ((saved/before)*100).toFixed(1);
+
+      document.getElementById('beforeTotal').innerText = before.toFixed(1);
+      document.getElementById('afterTotal').innerText = after.toFixed(1);
+      document.getElementById('timeSaved').innerText = saved.toFixed(1);
+      document.getElementById('percentSaved').innerText = percentSaved;
+
+      const ctx = document.getElementById('timeChart').getContext('2d');
       new Chart(ctx, {
         type: 'bar',
         data: {
-          labels: ['Before Voice Tools', 'After Voice Tools'],
-          datasets: [{
-            label: 'Estimated Weekly Hours',
-            data: [totalBefore, totalAfter],
-            backgroundColor: ['#ef4444','#10b981']
-          }]
+          labels: ['Framing', 'Writing', 'Editing'],
+          datasets: [
+            { label: 'Before (hrs)', data: [answers.frame, answers.writing, answers.editing], backgroundColor: '#2563eb' },
+            { label: 'After (hrs)', data: [answers.frame*(1-answers.savePct/100), answers.writing*(1-answers.savePct/100), answers.editing*(1-answers.savePct/100)], backgroundColor: '#60a5fa' }
+          ]
         },
-        options: { responsive: true, plugins: { legend: { display: false } } }
+        options: { responsive: true, scales: { y: { beginAtZero: true } } }
       });
 
-      document.getElementById("summaryText").innerHTML = `
-        <p><strong>Total before voice tools:</strong> ${totalBefore} hrs/week</p>
-        <p><strong>Total after voice tools:</strong> ${totalAfter} hrs/week</p>
-        <p>You estimated saving about <strong>${responses.voiceTranscribe} hrs/week</strong> using voice features + transcription.</p>
-        <p>That’s roughly <strong>${(responses.voiceTranscribe*4).toFixed(1)} hrs/month</strong> you could redirect into teaching, rest, or creativity!</p>
-      `;
+      document.getElementById('insights').innerText = `By using voice-to-text tools and active editing, you could save about ${saved.toFixed(1)} hours per week. That’s ${percentSaved}% of your planning time freed up for students, feedback, or self-care.`;
     }
 
     function restartSurvey() {
-      responses = {};
-      currentQuestion = 0;
-      document.getElementById("results").classList.add("hidden");
-      document.getElementById("survey").classList.remove("hidden");
-      renderQuestion();
+      answers = {}; currentQuestion=0;
+      document.getElementById('summary').style.display='none';
+      document.querySelector('.nav-buttons').style.display='flex';
+      document.getElementById('question-container').style.display='block';
+      showQuestion();
     }
 
-    renderQuestion();
+    showQuestion();
   </script>
 </body>
 </html>
