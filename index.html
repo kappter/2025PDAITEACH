@@ -1,309 +1,142 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
-<title>Voice → Lesson: Time Saver Estimator</title>
-
-<!-- Chart.js CDN -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<style>
-  :root{
-    --bg:#fbfcfd;
-    --card:#ffffff;
-    --accent:#0f62fe;
-    --muted:#6b7280;
-    --glass: rgba(15,98,254,0.06);
-    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  }
-  html,body{height:100%;margin:0;background:linear-gradient(180deg,#f7f9fc 0%,var(--bg) 100%);}
-  .wrap{max-width:900px;margin:0 auto;padding:18px;box-sizing:border-box;}
-  header{display:flex;gap:12px;align-items:center;margin-bottom:10px;}
-  header h1{font-size:18px;margin:0;}
-  p.lead{color:var(--muted);margin:6px 0 14px;font-size:13px;}
-  .card{background:var(--card);border-radius:12px;padding:14px;box-shadow:0 6px 18px rgba(16,24,40,0.06);margin-bottom:12px;}
-  label{display:block;font-weight:600;font-size:13px;margin-bottom:6px;color:#111827;}
-  .row{display:flex;gap:10px;flex-wrap:wrap;}
-  .col{flex:1;min-width:140px;}
-  input[type="number"]{
-    width:100%;padding:10px 12px;border-radius:8px;border:1px solid #e6e9ef;font-size:14px;box-sizing:border-box;
-  }
-  input[type="range"]{width:100%;}
-  .small{font-size:12px;color:var(--muted);}
-  .controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;}
-  button{
-    background:var(--accent);color:white;border:none;padding:10px 14px;border-radius:10px;font-weight:600;font-size:14px;
-    box-shadow:0 6px 14px rgba(15,98,254,0.14);cursor:pointer;
-  }
-  button.ghost{background:transparent;color:var(--accent);box-shadow:none;border:1px solid var(--glass);}
-  .chart-wrap{height:260px;}
-  .note{font-size:12px;color:var(--muted);margin-top:8px;}
-  footer{font-size:12px;color:var(--muted);text-align:center;margin-top:14px;}
-  /* responsive smaller */
-  @media (max-width:420px){
-    header h1{font-size:16px;}
-    .card{padding:12px;}
-  }
-  .saved-list{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
-  .chip{background:var(--glass);padding:6px 8px;border-radius:999px;font-size:12px;color:#0f2b67;}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lesson Planning Time Estimator</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f9fafb;
+      color: #333;
+    }
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+    .card {
+      background: #fff;
+      padding: 1.5rem;
+      border-radius: 1rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    h2, h3 {
+      margin-top: 0;
+    }
+    .question {
+      display: none;
+    }
+    .question.active {
+      display: block;
+    }
+    input[type="number"] {
+      width: 100%;
+      padding: 0.5rem;
+      margin-top: 0.5rem;
+      font-size: 1rem;
+    }
+    button {
+      margin-top: 1rem;
+      padding: 0.75rem 1rem;
+      border: none;
+      border-radius: 0.5rem;
+      background: #2563eb;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    button:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+    }
+    canvas {
+      margin-top: 1rem;
+    }
+  </style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <div style="width:52px;height:52px;border-radius:10px;background:linear-gradient(180deg,#e9f0ff,#f4f8ff);display:flex;align-items:center;justify-content:center">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 1v11" stroke="#0f62fe" stroke-width="1.6" stroke-linecap="round"/><rect x="7" y="12" width="10" height="10" rx="2" stroke="#0f62fe" stroke-width="1.6"/></svg>
-      </div>
-      <div>
-        <h1>Voice → Lesson: Time Saver Estimator</h1>
-        <p class="lead">Estimate weekly hours for planning, then see projected "after" hours if you use voice + transcription + active editing workflows.</p>
-      </div>
-    </header>
-
-    <section class="card" aria-labelledby="inputs">
-      <h2 style="margin:0 0 8px;font-size:15px">Your weekly time (hours)</h2>
-      <div class="row" id="inputs">
-        <div class="col">
-          <label for="framing">Framing / Planning</label>
-          <input id="framing" type="number" min="0" step="0.5" value="2" />
-          <div class="small">Big-picture planning, unit framing</div>
+  <div class="container">
+    <div class="card">
+      <h2>Lesson Planning Time Estimator</h2>
+      <div id="survey">
+        <!-- Questions -->
+        <div class="question active" data-q="0">
+          <h3>Q1: Hours per week framing lessons?</h3>
+          <input type="number" id="frameBefore" placeholder="e.g. 3" min="0">
+          <button onclick="nextQuestion()">Next</button>
         </div>
-        <div class="col">
-          <label for="writing">Writing (creating content)</label>
-          <input id="writing" type="number" min="0" step="0.5" value="4" />
-          <div class="small">Crafting materials, slides, activities</div>
+        <div class="question" data-q="1">
+          <h3>Q2: Hours per week writing lessons?</h3>
+          <input type="number" id="writingBefore" placeholder="e.g. 5" min="0">
+          <button onclick="nextQuestion()">Next</button>
         </div>
-        <div class="col">
-          <label for="editing">Editing & polishing</label>
-          <input id="editing" type="number" min="0" step="0.5" value="3" />
-          <div class="small">Refining language, formatting, assessments</div>
+        <div class="question" data-q="2">
+          <h3>Q3: Hours per week editing lessons?</h3>
+          <input type="number" id="editingBefore" placeholder="e.g. 2" min="0">
+          <button onclick="nextQuestion()">Next</button>
         </div>
-        <div class="col">
-          <label for="other">Other school work</label>
-          <input id="other" type="number" min="0" step="0.5" value="6" />
-          <div class="small">Emails, grading prep, admin work</div>
+        <div class="question" data-q="3">
+          <h3>Q4: Estimated time saved with transcription + browser voice tools?</h3>
+          <input type="number" id="timeSavedPercent" placeholder="% time saved (e.g. 30)" min="0" max="100">
+          <button onclick="showResults()">Finish</button>
         </div>
       </div>
-
-      <div style="margin-top:12px">
-        <label for="savings">Estimated % time saved by using voice → transcribe → active editing: <span id="savePct">25%</span></label>
-        <input id="savings" type="range" min="0" max="80" step="1" value="25" />
-        <div class="small">Adjust to reflect how much time you expect the workflow to save you.</div>
+      <div id="results" style="display:none;">
+        <h3>Your Weekly Comparison</h3>
+        <canvas id="timeChart"></canvas>
+        <p><strong>Tip:</strong> Use your phone's built‑in voice tools and transcription to capture ideas quickly. Remember: I never send anything important that I have *heard* back without actively editing.</p>
       </div>
-
-      <div class="controls" style="margin-top:12px">
-        <button id="updateBtn">Update Chart</button>
-        <button id="saveBtn" class="ghost">Save this week</button>
-        <button id="resetBtn" class="ghost">Reset saved history</button>
-      </div>
-
-      <div class="note" style="margin-top:10px">
-        Tip: Modern browsers (Chrome/Edge/Safari) support microphone access and simple voice capture — try the native recorder on your phone or in-browser APIs for quick capture. 
-        <br><strong>Personal rule:</strong> "I never send anything important that I have HEARD back." Please avoid uploading student-identifiable info to third-party services unless approved.
-      </div>
-    </section>
-
-    <section class="card">
-      <h2 style="margin:0 0 8px;font-size:15px">Before vs After (per category)</h2>
-      <div class="chart-wrap">
-        <canvas id="bars"></canvas>
-      </div>
-    </section>
-
-    <section class="card">
-      <h2 style="margin:0 0 8px;font-size:15px">Weekly history (total hours)</h2>
-      <div class="small">Save each week's estimates to compare totals over time.</div>
-      <div class="chart-wrap" style="margin-top:6px">
-        <canvas id="history"></canvas>
-      </div>
-
-      <div class="saved-list" id="savedChips" aria-live="polite" style="margin-top:10px"></div>
-    </section>
-
-    <footer>
-      Built for PD — drop this file into your GitHub repo. Works offline after first load (charts rendered in-browser).
-    </footer>
+    </div>
   </div>
 
-<script>
-/* ---------------------------
-   Utility & DOM references
-   --------------------------- */
-const framing = document.getElementById('framing');
-const writing = document.getElementById('writing');
-const editing = document.getElementById('editing');
-const other = document.getElementById('other');
-const savings = document.getElementById('savings');
-const savePct = document.getElementById('savePct');
-const updateBtn = document.getElementById('updateBtn');
-const saveBtn = document.getElementById('saveBtn');
-const resetBtn = document.getElementById('resetBtn');
-const savedChips = document.getElementById('savedChips');
+  <script>
+    let currentQ = 0;
+    const questions = document.querySelectorAll('.question');
 
-savePct.textContent = savings.value + '%';
-savings.addEventListener('input', ()=> savePct.textContent = savings.value + '%');
+    function nextQuestion() {
+      questions[currentQ].classList.remove('active');
+      currentQ++;
+      questions[currentQ].classList.add('active');
+    }
 
-/* ---------------------------
-   Chart setup (Chart.js)
-   --------------------------- */
-function createBarChart(ctx){
-  return new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: ['Framing','Writing','Editing','Other'],
-      datasets: [
-        { label: 'Before (hrs)', data: [0,0,0,0], backgroundColor: 'rgba(15,98,254,0.9)' },
-        { label: 'After (hrs)', data: [0,0,0,0], backgroundColor: 'rgba(14,165,233,0.9)' }
-      ]
-    },
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      scales:{
-        y:{
-          beginAtZero:true,
-          title:{display:true,text:'Hours / week'}
+    function showResults() {
+      // gather inputs
+      const frame = parseFloat(document.getElementById('frameBefore').value) || 0;
+      const writing = parseFloat(document.getElementById('writingBefore').value) || 0;
+      const editing = parseFloat(document.getElementById('editingBefore').value) || 0;
+      const percent = parseFloat(document.getElementById('timeSavedPercent').value) || 0;
+
+      const before = frame + writing + editing;
+      const after = before * (1 - percent/100);
+
+      document.getElementById('survey').style.display = 'none';
+      document.getElementById('results').style.display = 'block';
+
+      const ctx = document.getElementById('timeChart');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Before Voice Tools', 'After Voice Tools'],
+          datasets: [{
+            label: 'Estimated Weekly Hours',
+            data: [before, after],
+            backgroundColor: ['#ef4444','#10b981']
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
         }
-      },
-      plugins:{
-        legend:{position:'top'},
-        tooltip:{mode:'index'}
-      }
+      });
     }
-  });
-}
-
-function createLineChart(ctx){
-  return new Chart(ctx, {
-    type:'line',
-    data:{
-      labels:[],
-      datasets:[
-        { label:'Total Before (hrs)', data:[], borderColor:'rgba(15,98,254,1)', backgroundColor:'rgba(15,98,254,0.08)', tension:0.2, fill:true },
-        { label:'Total After (hrs)', data:[], borderColor:'rgba(14,165,233,1)', backgroundColor:'rgba(14,165,233,0.08)', tension:0.2, fill:true }
-      ]
-    },
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      scales:{ y:{ beginAtZero:true, title:{display:true,text:'Total hours/week'} } },
-      plugins:{ legend:{position:'top'} }
-    }
-  });
-}
-
-const bars = createBarChart(document.getElementById('bars').getContext('2d'));
-const history = createLineChart(document.getElementById('history').getContext('2d'));
-
-/* ---------------------------
-   Calculation & render
-   --------------------------- */
-function getInputs(){
-  const f = Math.max(0, parseFloat(framing.value) || 0);
-  const w = Math.max(0, parseFloat(writing.value) || 0);
-  const e = Math.max(0, parseFloat(editing.value) || 0);
-  const o = Math.max(0, parseFloat(other.value) || 0);
-  const pct = Math.max(0, Math.min(80, parseFloat(savings.value) || 0)) / 100;
-  return { f,w,e,o,pct };
-}
-
-function computeAfter(beforeVal, pct){
-  // after = before * (1 - pct). Clamp to 0
-  return Math.max(0, Math.round((beforeVal * (1 - pct)) * 10) / 10);
-}
-
-function updateCharts(){
-  const {f,w,e,o,pct} = getInputs();
-  const before = [f,w,e,o];
-  const after = [ computeAfter(f,pct), computeAfter(w,pct), computeAfter(e,pct), computeAfter(o,pct) ];
-  // update bars
-  bars.data.datasets[0].data = before;
-  bars.data.datasets[1].data = after;
-  bars.update();
-  // update totals in history preview (not saved)
-  renderSavedChips();
-}
-
-updateBtn.addEventListener('click', updateCharts);
-window.addEventListener('load', updateCharts);
-
-/* ---------------------------
-   Save / history in localStorage
-   --------------------------- */
-const STORAGE_KEY = 'voice_lesson_history_v1';
-
-function loadHistory(){
-  try{
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if(!raw) return [];
-    return JSON.parse(raw);
-  }catch(e){ return []; }
-}
-
-function saveHistory(arr){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
-}
-
-function addWeek(label){
-  const {f,w,e,o,pct} = getInputs();
-  const beforeTotal = Math.round((f+w+e+o) * 10) / 10;
-  const afterTotal = Math.round(((computeAfter(f,pct)+computeAfter(w,pct)+computeAfter(e,pct)+computeAfter(o,pct))) * 10) / 10;
-  const historyArr = loadHistory();
-  historyArr.push({label, before: beforeTotal, after: afterTotal, ts: Date.now()});
-  saveHistory(historyArr);
-  refreshHistoryChart();
-  renderSavedChips();
-}
-
-saveBtn.addEventListener('click', ()=>{
-  const label = prompt('Enter label for this week (e.g., "Week of Aug 31" or "Wk1")','Week ' + (new Date()).toLocaleDateString());
-  if(!label) return;
-  addWeek(label);
-});
-
-resetBtn.addEventListener('click', ()=>{
-  if(confirm('Clear saved weekly history?')) {
-    localStorage.removeItem(STORAGE_KEY);
-    refreshHistoryChart();
-    renderSavedChips();
-  }
-});
-
-/* render chips and line chart */
-function renderSavedChips(){
-  const arr = loadHistory();
-  savedChips.innerHTML = '';
-  if(arr.length === 0){
-    savedChips.innerHTML = '<div class="small">No saved weeks yet. Use "Save this week" to build a weekly comparison.</div>';
-    // also clear chart
-    history.data.labels = [];
-    history.data.datasets[0].data = [];
-    history.data.datasets[1].data = [];
-    history.update();
-    return;
-  }
-  arr.slice(-12).reverse().forEach(item=>{
-    const el = document.createElement('div');
-    el.className = 'chip';
-    el.textContent = item.label + ' • B:' + item.before + 'h / A:' + item.after + 'h';
-    savedChips.appendChild(el);
-  });
-}
-
-/* update line chart */
-function refreshHistoryChart(){
-  const arr = loadHistory();
-  history.data.labels = arr.map(x=>x.label);
-  history.data.datasets[0].data = arr.map(x=>x.before);
-  history.data.datasets[1].data = arr.map(x=>x.after);
-  history.update();
-}
-
-/* init */
-refreshHistoryChart();
-renderSavedChips();
-
-</script>
+  </script>
 </body>
 </html>
