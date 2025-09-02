@@ -5,6 +5,11 @@
 **Audience:** K–12 Educators
 **Facilitator:** \Ken Kapptie
 
+#### The Email
+
+Teachers often have ideas, reflections, and planning insights “on the go”—while driving, walking, or between classes. Unfortunately, those ideas can be lost before making it onto paper. This session will show educators how to use the built-in voice recording features on their phones to quickly capture thoughts, and then leverage transcription and AI tools to transform those recordings into usable lesson plans, letters, or professional notes.
+Participants will leave with simple, practical workflows that make lesson planning and communication easier, faster, and more creative.
+
 ---
 
 ## Introduction: My Philosophy on Using AI
