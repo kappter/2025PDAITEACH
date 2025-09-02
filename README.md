@@ -42,6 +42,7 @@ That’s the balance I want us to explore together today.
 
 * [Download Partner Practice Guide (PDF)](https://github.com/kappter/2025PDAITEACH/blob/main/Voice_to_Lesson_Activities.pdf)
 * [Download Voice-to-Lesson Handout (PDF)](https://github.com/kappter/2025PDAITEACH/blob/main/Voice_to_Lesson_Handout.pdf)
+* [RE_ New AI Bot - Kenneth J Kapptie - Outlook](https://github.com/kappter/2025PDAITEACH/blob/main/RE_%20New%20AI%20Bot%20-%20Kenneth%20J%20Kapptie%20-%20Outlook.pdf)
 
 ## Objectives
 
